@@ -8,17 +8,18 @@ from lib.utils import get_img_list,get_ground_truthes,APCE,PSR
 from csrt import CSRDCF, DEFAULT_PARAMS
 
 
-
 class PyTracker:
-    def __init__(self,img_dir,tracker_type,dataset_config):
+    def __init__(self,img_dir,tracker_type=None, tracker_params=DEFAULT_PARAMS,
+                 dataset_config=None, max_frames=None):
         self.img_dir=img_dir
         self.tracker_type=tracker_type
         self.frame_list = get_img_list(img_dir)
         self.frame_list.sort()
-        #self.frame_list = self.frame_list[:100]
+        if max_frames:
+            self.frame_list = self.frame_list[:max_frames]
         dataname=img_dir.split('/')[-2]
         self.gts=get_ground_truthes(img_dir[:-4])
-        self.tracker=CSRDCF(config=DEFAULT_PARAMS)
+        self.tracker=CSRDCF(config=tracker_params)
         self.init_gt=self.gts[0]
 
     def tracking(self,verbose=True,video_path=None):
@@ -108,10 +109,14 @@ if __name__ == '__main__':
     #print("MI = " + str(csrdcf.MAX_ITER))
     #print("TS = " + str(csrdcf.TARGET_SIZE))
 
-    data_path=sys.argv[2]
+    tracker_params = DEFAULT_PARAMS
+
+    data_path=sys.argv[1]
     gts = get_ground_truthes(data_path)
     img_dir = os.path.join(data_path, 'img')
-    tracker = PyTracker(img_dir, tracker_type=sys.argv[1], dataset_config=None)
+    tracker = PyTracker(img_dir,
+                        tracker_params=tracker_params,
+                        max_frames=400)
     poses=tracker.tracking(verbose=True)
     #plot_success(gts,poses,os.path.join('../results/CF',data_name+'_success.jpg'))
     #plot_precision(gts,poses,os.path.join('../results/CF',data_name+'_precision.jpg'))
