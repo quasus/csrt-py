@@ -410,7 +410,6 @@ class CSRDCF(BaseCF):
         # initialize lagrangian multiplier
         L=np.zeros_like(H)
         iter=1
-        print(self.params['admm_iterations'])
         while True:
             G=(Sxy+mu*H-L)/(Sxx+mu)
             H=fft2(np.real(P[:,:,None]*ifft2(mu*G+L)/(mu+lambda_)))
