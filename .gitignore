@@ -1,0 +1,5 @@
+*__pycache__*
+*.pyc
+*~
+*[._]sw[a-p]
+.ropeproject
