@@ -95,11 +95,11 @@ While a more comprehensive comparison is coming, here is a small table:
 | Scales | Iterations | Size | Features |  FPS | 
 | ------ | ---------- | ---- | -------- | ---- | 
 |     33 |          4 |  200 |       29 |  8.5 |
-|    *5* |          4 |  200 |       29 | 15.0 |
-|     33 |        *2* |  200 |       29 |  9.5 |
-|     33 |          4 | *64* |       29 | 13.6 |
-|     33 |          4 |  200 |      *7* | 11.5 |
-|    *5* |        *2* | *64* |      *7* | 37.3 |
+|    **5** |          4 |  200 |       29 | 15.0 |
+|     33 |        **2** |  200 |       29 |  9.5 |
+|     33 |          4 | **64** |       29 | 13.6 |
+|     33 |          4 |  200 |      **7** | 11.5 |
+|    **5** |        **2** | **64** |      **7** | 37.3 |
 
 Applying all the optimizations simultaneously does not seem to ruin the
 quality, while the speed increases four times.
