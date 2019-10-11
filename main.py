@@ -114,23 +114,23 @@ if __name__ == '__main__':
 
     scale_params = DEFAULT_SCALE_PARAMS
 
-    scale_params['number_of_scales'] = 5 # default: 33
-    scale_params['number_of_interp_scales'] = 5 # default: 33
-    scale_params['scale_step_filter']  = 1.02  # this is the default; probably should be changed
+    #scale_params['number_of_scales_filter'] = 5 # default: 33
+    #scale_params['number_of_interp_scales'] = 5 # default: 33
+    #scale_params['scale_step_filter']  = 1.02  # this is the default; probably should be changed
 
     params = DEFAULT_PARAMS
     params['scale_params'] = scale_params
 
-    params['admm_iterations'] = 2 # default: 4
-    params['template_size'] = 64 # default: 200
-    params['top_channels'] = 7 # default: None; less is riskier
+    #params['admm_iterations'] = 2 # default: 4
+    #params['template_size'] = 64 # default: 200
+    #params['top_channels'] = 7 # default: None; less is riskier
 
     data_path=sys.argv[1]
     gts = get_ground_truthes(data_path)
     img_dir = os.path.join(data_path, 'img')
     tracker = PyTracker(img_dir,
                         tracker_params=params,
-                        max_frames=None)
+                        max_frames=100)
     poses=tracker.tracking(verbose=True)
     #plot_success(gts,poses,os.path.join('../results/CF',data_name+'_success.jpg'))
     #plot_precision(gts,poses,os.path.join('../results/CF',data_name+'_precision.jpg'))
