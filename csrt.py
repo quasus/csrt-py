@@ -70,7 +70,9 @@ DEFAULT_PARAMS = {
     'scale_type': 'normal',
     'admm_iterations': 4,
     'template_size': 200,
-    'scale_params': DEFAULT_SCALE_PARAMS
+    'scale_params': DEFAULT_SCALE_PARAMS,
+
+    'top_channels': None
 }
 
 
@@ -251,11 +253,28 @@ class CSRDCF(BaseCF):
         chann_w = np.max(response.reshape(response.shape[0]*response.shape[1], -1), axis=0)
         self.chann_w = chann_w/np.sum(chann_w)
 
+        # New: irrelevant channels!
+        self.irrelevant_channels = []
+        top_channels = self.params['top_channels']
+        if top_channels:
+            for chan_i, _ in sorted(enumerate(chann_w),
+                                    reverse=True,
+                                    key = lambda x: x[1])[top_channels:]:
+                self.irrelevant_channels.append(chan_i)
+
+        f = np.delete(f, self.irrelevant_channels, 2)
+        # create filters using segmentation mask
+        self.H=self.create_csr_filter(f,self.yf,mask)
+        response=np.real(ifft2(fft2(f)*np.conj(self.H)))
+        chann_w=np.max(response.reshape(response.shape[0]*response.shape[1],-1),axis=0)
+        self.chann_w=chann_w/np.sum(chann_w)
+
 
 
     def update(self,current_frame,vis=False):
         f=get_csr_features(current_frame,self._center,self.current_scale_factor,
                            self.template_size,self.rescale_template_size,self.cell_size)
+        f = np.delete(f, self.irrelevant_channels, 2)
         f=f*self._window[:,:,None]
         if self.use_channel_weights is True:
             response_chann=np.real(ifft2(fft2(f)*np.conj(self.H)))
@@ -356,6 +375,7 @@ class CSRDCF(BaseCF):
 
         f = get_csr_features(current_frame, self._center, self.current_scale_factor,
                              self.template_size, self.rescale_template_size, self.cell_size)
+        f = np.delete(f, self.irrelevant_channels, 2)
         f = f * self._window[:, :, None]
         H_new=self.create_csr_filter(f,self.yf,mask)
         if self.use_channel_weights:
@@ -390,6 +410,7 @@ class CSRDCF(BaseCF):
         # initialize lagrangian multiplier
         L=np.zeros_like(H)
         iter=1
+        print(self.params['admm_iterations'])
         while True:
             G=(Sxy+mu*H-L)/(Sxx+mu)
             H=fft2(np.real(P[:,:,None]*ifft2(mu*G+L)/(mu+lambda_)))
