@@ -537,7 +537,9 @@ class CSRDCF(BaseCF):
     def segment_region(self,img,center,template_size,target_size,scale_factor,hist_fg,hist_bg):
         valid_pixels_mask,patch = get_patch(img,center,scale_factor,template_size)
         scaled_target_sz=(target_size[0]*scale_factor,target_size[1]*scale_factor)
-        fg_prior=self.get_location_prior((0,0,patch.shape[1],patch.shape[0]),scaled_target_sz,(patch.shape[1],patch.shape[0]))
+        fg_prior=self.get_location_prior((0,0,patch.shape[1],patch.shape[0]),
+                                         scaled_target_sz,
+                                         (patch.shape[1],patch.shape[0]))
 
         probs=Segment.compute_posteriors(patch, fg_prior, 1 - fg_prior,hist_fg,hist_bg, tl=(0, 0),
                                          br=(patch.shape[1],patch.shape[0]), p_b=self.p_b)
