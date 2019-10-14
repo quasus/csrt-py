@@ -291,8 +291,6 @@ class CSRDCF(BaseCF):
             channel_discr=np.ones((response_chann.shape[2]))
             for i in range(response_chann.shape[2]):
                 norm_response=self.normalize_img(response_chann[:,:,i])
-
-                from skimage.feature.peak import peak_local_max
                 peak_locs=peak_local_max(norm_response,min_distance=5)
                 if len(peak_locs)<2:
                     continue
