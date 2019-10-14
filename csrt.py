@@ -270,24 +270,26 @@ class CSRDCF(BaseCF):
         self.chann_w=chann_w/np.sum(chann_w)
 
 
-
-    def update(self,current_frame,vis=False):
+    def get_features(self, current_frame):
         f=get_csr_features(current_frame,self._center,self.current_scale_factor,
                            self.template_size,self.rescale_template_size,self.cell_size)
         f = np.delete(f, self.irrelevant_channels, 2)
         f=f*self._window[:,:,None]
-        if self.use_channel_weights is True:
-            response_chann=np.real(ifft2(fft2(f)*np.conj(self.H)))
+        return f
+
+
+    def get_response(self, features, vis=False):
+        if self.use_channel_weights:
+            response_chann=np.real(ifft2(fft2(features)*np.conj(self.H)))
             response=np.sum(response_chann*self.chann_w[None,None,:],axis=2)
         else:
-            response=np.real(ifft2(np.sum(fft2(f)*np.conj(self.H),axis=2)))
-        if vis is True:
+            response=np.real(ifft2(np.sum(fft2(features)*np.conj(self.H),axis=2)))
+        if vis:
             self.score=response
             self.score = np.roll(self.score, int(np.floor(self.score.shape[0] / 2)), axis=0)
             self.score = np.roll(self.score, int(np.floor(self.score.shape[1] / 2)), axis=1)
 
-        curr=np.unravel_index(np.argmax(response,axis=None),response.shape)
-        if self.use_channel_weights is True:
+        if self.use_channel_weights:
             channel_discr=np.ones((response_chann.shape[2]))
             for i in range(response_chann.shape[2]):
                 norm_response=self.normalize_img(response_chann[:,:,i])
@@ -305,7 +307,11 @@ class CSRDCF(BaseCF):
                     else:
                         break
                 channel_discr[i]=max(0.5,1-(second_max_val/(max_val+1e-10)))
+        return response, channel_discr
 
+
+    def update_position(self, response):
+        curr=np.unravel_index(np.argmax(response,axis=None),response.shape)
         v_neighbors=response[[(curr[0]-1)%response.shape[0],(curr[0])%response.shape[0],
                               (curr[0]+1)%response.shape[0]],curr[1]]
         h_neighbors=response[curr[0],
@@ -323,6 +329,8 @@ class CSRDCF(BaseCF):
         dy=self.current_scale_factor*self.cell_size*(1/self.rescale_ratio)*row
         self._center=(self._center[0]+dx,self._center[1]+dy)
 
+
+    def update_scale(self, current_frame):
         self.current_scale_factor = self.scale_estimator.update(current_frame, self._center, self.base_target_sz,
                                                                 self.current_scale_factor)
         if self.scale_type == 'normal':
@@ -331,8 +339,9 @@ class CSRDCF(BaseCF):
 
         self.target_sz = (self.current_scale_factor * self.base_target_sz[0],
                           self.current_scale_factor * self.base_target_sz[1])
-        region=[np.round(self._center[0] - self.target_sz[0] / 2),np.round( self._center[1] - self.target_sz[1] / 2),
-                        self.target_sz[0], self.target_sz[1]]
+
+
+    def update_histograms(self, current_frame, region):
         if self.use_segmentation:
             if self.segcolor_space=='bgr':
                 seg_img=current_frame
@@ -367,22 +376,40 @@ class CSRDCF(BaseCF):
             pass
         else:
             mask=self.target_dummy_mask
+        return mask
+
+    def update_weights(self, features, channel_discr, H_new):
+        response=np.real(ifft2(fft2(features)*np.conj(H_new)))
+        chann_w = np.max(response.reshape(response.shape[0] * response.shape[1], -1), axis=0)*channel_discr
+        chann_w=chann_w/np.sum(chann_w)
+        self.chann_w=(1-self.channels_weight_lr)*self.chann_w+self.channels_weight_lr*chann_w
+        self.chann_w=self.chann_w/np.sum(self.chann_w)
+
+
+    def update_filter(self, H_new):
+        self.H=(1-self.interp_factor)*self.H+self.interp_factor*H_new
+
+
+    def update(self,current_frame,vis=False):
+        f = self.get_features(current_frame)
+        response, channel_discr = self.get_response(f, vis)
+        self.update_position(response)
+        self.update_scale(current_frame)
+
+        region=[np.round(self._center[0] - self.target_sz[0] / 2),np.round( self._center[1] - self.target_sz[1] / 2),
+                        self.target_sz[0], self.target_sz[1]]
+
+        mask = self.update_histograms(current_frame, region)
+
 
         #cv2.imshow('Mask', (mask * 255).astype(np.uint8))
         #cv2.waitKey(1)
 
-        f = get_csr_features(current_frame, self._center, self.current_scale_factor,
-                             self.template_size, self.rescale_template_size, self.cell_size)
-        f = np.delete(f, self.irrelevant_channels, 2)
-        f = f * self._window[:, :, None]
+        f = self.get_features(current_frame)
         H_new=self.create_csr_filter(f,self.yf,mask)
         if self.use_channel_weights:
-            response=np.real(ifft2(fft2(f)*np.conj(H_new)))
-            chann_w = np.max(response.reshape(response.shape[0] * response.shape[1], -1), axis=0)*channel_discr
-            chann_w=chann_w/np.sum(chann_w)
-            self.chann_w=(1-self.channels_weight_lr)*self.chann_w+self.channels_weight_lr*chann_w
-            self.chann_w=self.chann_w/np.sum(self.chann_w)
-        self.H=(1-self.interp_factor)*self.H+self.interp_factor*H_new
+            self.update_weights(f, channel_discr, H_new)
+        self.update_filter(H_new)
 
         return region
 
