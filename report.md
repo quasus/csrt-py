@@ -8,33 +8,33 @@ implementation of the tracker in OpenCV.
 
 The tracking involves the following steps.
 
-1. *Feature extraction*: the patch determined by object’s previous location and
+1. **Feature extraction**: the patch determined by object’s previous location and
    scale is resized to a fixed size and HoG and CN features are extracted.
 
-2. *Window response*: FFT and IFFT are used to compute the cross-correlation of
+2. **Window response**: FFT and IFFT are used to compute the cross-correlation of
    the filter and weighted features.
 
-3. *Localization* using the window response.
+3. **Localization** using the window response.
 
-4. *Scale estimation*: the current frame is used to estimate the new scale of
+4. **Scale estimation**: the current frame is used to estimate the new scale of
    the object.  Scales from a fixed scale pool are considered separately; each
    one requires FFT and IFFT.  These Fourier transform do not use features.
 
-5. *Binary mask* is calculated using foreground and background histograms.
+5. **Binary mask** is calculated using foreground and background histograms.
 
-6. *A posteriori feature extraction*: new location and scale are used to
+6. **A posteriori feature extraction**: new location and scale are used to
    extract the features.
 
-7. *New filter* is computed from the mask and new features. The construction of
+7. **New filter** is computed from the mask and new features. The construction of
    an optimal filter is an iterative process with each iteration involving a
    direct and inverse Fourier transform as well as matrix arithmetics.  I
    suspect that current implementation of matrix operations is suboptimal, but
    even if it is, this inefficiency may be numpy-specific and irrelevant for
    the C++ implementation.
 
-8. *The weights are updated.*
+8. **The weights are updated.**
 
-9. *The filter is updated.*
+9. **The filter is updated.**
 
 
 ## Profiling
