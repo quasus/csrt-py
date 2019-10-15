@@ -225,7 +225,10 @@ class CSRDCF(BaseCF):
             hist_bg=Histogram(3,self.nbins)
             self.extract_histograms(seg_img,bbox,hist_fg,hist_bg)
 
-            mask=self.segment_region(seg_img,self._center,self.template_size,self.base_target_sz,self.current_scale_factor,
+            mask=self.segment_region(seg_img,self._center,
+                                     self.template_size,
+                                     self.base_target_sz,
+                                     self.current_scale_factor,
                                      hist_fg,hist_bg)
             self.hist_bg_p_bins=hist_bg.p_bins
             self.hist_fg_p_bins=hist_fg.p_bins
@@ -331,7 +334,9 @@ class CSRDCF(BaseCF):
 
 
     def update_scale(self, current_frame):
-        self.current_scale_factor = self.scale_estimator.update(current_frame, self._center, self.base_target_sz,
+        self.current_scale_factor = self.scale_estimator.update(current_frame,
+                                                                self._center,
+                                                                self.base_target_sz,
                                                                 self.current_scale_factor)
         if self.scale_type == 'normal':
             self.current_scale_factor = np.clip(self.current_scale_factor, a_min=self._min_scale_factor,
@@ -360,8 +365,13 @@ class CSRDCF(BaseCF):
 
             hist_fg.p_bins=self.hist_fg_p_bins
             hist_bg.p_bins=self.hist_bg_p_bins
-            mask=self.segment_region(seg_img,self._center,self.template_size,self.base_target_sz,self.current_scale_factor,
-                                     hist_fg,hist_bg)
+            mask=self.segment_region(seg_img,
+                                     self._center,
+                                     self.template_size,
+                                     self.base_target_sz,
+                                     self.current_scale_factor,
+                                     hist_fg,
+                                     hist_bg)
             init_mask_padded=np.zeros_like(mask)
             pm_x0=int(np.floor(mask.shape[1]/2-region[2]/2))
             pm_y0=int(np.floor(mask.shape[0]/2-region[3]/2))
@@ -396,8 +406,10 @@ class CSRDCF(BaseCF):
         self.update_position(response)
         self.update_scale(current_frame)
 
-        region=[np.round(self._center[0] - self.target_sz[0] / 2),np.round( self._center[1] - self.target_sz[1] / 2),
-                        self.target_sz[0], self.target_sz[1]]
+        region=[np.round(self._center[0] - self.target_sz[0] / 2),
+                np.round( self._center[1] - self.target_sz[1] / 2),
+                self.target_sz[0],
+                self.target_sz[1]]
 
         mask = self.update_histograms(current_frame, region)
 
@@ -571,7 +583,8 @@ class Histogram:
             ys=np.arange(y1,y2+1)
             xs=np.arange(x1,x2+1)
             xs,ys=np.meshgrid(xs,ys)
-            kernel_weight[ys,xs]=kernel_profile_epanechnikov(((cx-xs)*kernel_size_width)**2+((cy-ys)*kernel_size_height)**2)
+            kernel_weight[ys,xs]=kernel_profile_epanechnikov(((cx-xs)*kernel_size_width)**2
+                                                             +((cy-ys)*kernel_size_height)**2)
             weights=kernel_weight
         range_perbin_inverse=self.num_bins_perdimension/256
         """
