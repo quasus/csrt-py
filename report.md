@@ -155,16 +155,19 @@ dropping all but 7 (or even 5) most significant channels calculated from the
 initial boundary box does not lead to a considerable loss of quality while
 boosting the performance.
 
-While a more comprehensive comparison is coming, here is a small table:
+As for the accurasy, we measure the mean IOU over the first 100 frames and the
+number of frames processed before IOU hits 0.33.
 
-| Scales | Iterations | Size | Features |  FPS | 
-| ------ | ---------- | ---- | -------- | ---- | 
-|     33 |          4 |  200 |       29 |  8.5 |
-|    **5** |          4 |  200 |       29 | 15.0 |
-|     33 |        **2** |  200 |       29 |  9.5 |
-|     33 |          4 | **64** |       29 | 13.6 |
-|     33 |          4 |  200 |      **7** | 11.5 |
-|    **5** |        **2** | **64** |      **7** | 37.3 |
+| Scales | Iterations | Size | Features |  FPS | Frames before lost | Mean IOU (100 frames) |
+| ------ | ---------- | ---- | -------- | ---- | -------| ---------|
+|     33 |          4 |  200 |       29 |  8.5 | 261 | 0.70 |
+|    **5** |          4 |  200 |       29 | 15.0 | 238 | 0.51 |
+|    **20** |          4 |  200 |       29 | 12.0 | 234 | 0.62 |
+|     33 |        **2** |  200 |       29 |  9.0 | 479 | 0.69 |
+|     33 |          4 | **64** |       29 | 13.6 | 237 | 0.68 |
+|     33 |          4 |  200 |      **7** | 11.5 | 223 | 0.73 |
+|    **5** |        **2** | **64** |      **7** | 37.3 | 234 | 0.49 |
+|   **20** |        **2** | **64** |      **7** | 19.7 | 321 | 0.50 |
 
 Applying all the optimizations simultaneously does not seem to ruin the
 quality, while the speed increases four times.
