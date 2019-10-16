@@ -168,6 +168,7 @@ number of frames processed before IOU hits 0.33.
 |     33 |          4 |  200 |      **7** | 11.5 | 223 | 0.73 |
 |    **5** |        **2** | **64** |      **7** | 37.3 | 234 | 0.49 |
 |   **20** |        **2** | **64** |      **7** | 19.7 | 321 | 0.50 |
+|   33 |        **2** | **64** |      **7** | 14.6 | 341 | 0.55 |
 
 Applying all the optimizations simultaneously does not seem to ruin the
 quality, while the speed increases four times.
