@@ -133,7 +133,7 @@ class PyTracker:
 
         poses.append(np.array([int(x1), int(y1), int(w), int(h)]))
         print("FPS: " + str(sum(fpss)/len(fpss)))
-        print("Mean IOU: {:.2%} ({} frames)".format(sum(ious)/len(ious), len(ious)))
+        print("Mean IOU: {:.2} ({} frames)".format(sum(ious)/len(ious), len(ious)))
         return np.array(poses)
 
 
