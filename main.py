@@ -196,8 +196,7 @@ if __name__ == '__main__':
     img_dir = os.path.join(data_path, 'img')
     tracker = PyTracker(img_dir,
                         tracker_params=params,
-                        #max_frames=100
-                        max_frames=None
+                        max_frames=None,
                         IOUmin=0.33
                         )
     poses=tracker.tracking(verbose=True)
