@@ -1,3 +1,4 @@
+import itertools
 import os
 import sys
 from lib.utils import get_ground_truthes, plot_precision, plot_success
@@ -10,7 +11,7 @@ from csrt import CSRDCF, DEFAULT_PARAMS, DEFAULT_SCALE_PARAMS
 
 class PyTracker:
     def __init__(self,img_dir,tracker_type=None, tracker_params=DEFAULT_PARAMS,
-                 dataset_config=None, max_frames=None):
+                 dataset_config=None, max_frames=None, IOUmin=0.33):
         self.img_dir=img_dir
         self.tracker_type=tracker_type
         self.frame_list = get_img_list(img_dir)
@@ -18,9 +19,30 @@ class PyTracker:
         if max_frames:
             self.frame_list = self.frame_list[:max_frames]
         dataname=img_dir.split('/')[-2]
+
         self.gts=get_ground_truthes(img_dir[:-4])
+        frame_list_len = len(self.frame_list)
+        gts_len = len(self.gts)
+        if gts_len > frame_list_len:
+            self.gts = self.gts[:frame_list_len]
+        elif gts_len < frame_list_len:
+            self.gts += [None] * (frame_list_len - gts_len)
+
         self.tracker=CSRDCF(config=tracker_params)
         self.init_gt=self.gts[0]
+
+        self.IOUmin = IOUmin
+
+    def updating_histograms(self):
+        init_frame = cv2.imread(self.frame_list[0])
+        init_gt = np.array(self.init_gt)
+        self.tracker.init(init_frame,init_gt)
+        for _ in range(100):
+            self.tracker.update_histograms(init_frame,
+                                           [100,
+                                            100,
+                                            self.tracker.target_sz[0],
+                                            self.tracker.target_sz[1]])
 
     def tracking(self,verbose=True,video_path=None):
         poses = []
@@ -35,12 +57,20 @@ class PyTracker:
             writer = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (init_frame.shape[1], init_frame.shape[0]))
 
         fpss = []
+        ious = []
 
-        for frame_name in self.frame_list[1:]:
+        for frame_name, gt in itertools.zip_longest(self.frame_list[1:], self.gts[1:]):
             timer = cv2.getTickCount()
             current_frame=cv2.imread(frame_name)
             height,width=current_frame.shape[:2]
             bbox=self.tracker.update(current_frame,vis=verbose)
+
+            if gt is not None:
+                iou = IOU(bbox, gt)
+                if iou < self.IOUmin:
+                    break
+                ious.append(iou)
+
             x1,y1,w,h=bbox
             if verbose:
                 if len(current_frame.shape)==2:
@@ -80,6 +110,9 @@ class PyTracker:
                 score_map = cv2.addWeighted(crop_img, 0.6, score, 0.4, 0)
                 current_frame[ymin:ymax, xmin:xmax] = score_map
                 show_frame=cv2.rectangle(current_frame, (int(x1), int(y1)), (int(x1 + w), int(y1 + h)), (255, 0, 0),1)
+                if gt is not None:
+                    x0, y0, w0, h0 = gt
+                show_frame=cv2.rectangle(current_frame, (int(x1), int(y1)), (int(x1 + w), int(y1 + h)), (255, 0, 0),1)
                 fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
                 fpss.append(fps)
                 cv2.putText(show_frame, "FPS : " + str(int(fps)), (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 170, 50), 2)
@@ -100,7 +133,40 @@ class PyTracker:
 
         poses.append(np.array([int(x1), int(y1), int(w), int(h)]))
         print("FPS: " + str(sum(fpss)/len(fpss)))
+        print("Mean IOU: {:.2%} ({} frames)".format(sum(ious)/len(ious), len(ious)))
         return np.array(poses)
+
+
+def intersect_intervals(*intervals):
+    a = max(interval[0] for interval in intervals)
+    b = min(interval[1] for interval in intervals)
+    return (a, b) if a < b else None
+
+
+def intersect_boxes(*boxes):
+    starts_lengths_by_coord = tuple(zip(*(((x, w), (y, h)) for (x, y, w, h) in boxes)))
+    sides_by_coord = tuple([(start, start + length) for (start, length) in starts_lengths]
+                           for starts_lengths in starts_lengths_by_coord)
+    intersections_by_coord = tuple(intersect_intervals(*sides) for sides in sides_by_coord)
+    if all(intersections_by_coord):
+        (x0, x1), (y0, y1) = intersections_by_coord
+        return (x0, y0, x1 - x0, y1 - y0)
+    else:
+        return None
+
+
+def IOU(box1, box2):
+    x1, y1, w1, h1 = box1
+    x2, y2, w2, h2 = box2
+    i = intersect_boxes(box1, box2)
+    if i:
+        x, y, w, h = intersect_boxes(box1, box2)
+        S1 = w1 * h1
+        S2 = w2 * h2
+        Sint = w * h
+        return Sint/(S1 + S2 - Sint)
+    else:
+        return 0
 
 
 if __name__ == '__main__':
@@ -130,7 +196,11 @@ if __name__ == '__main__':
     img_dir = os.path.join(data_path, 'img')
     tracker = PyTracker(img_dir,
                         tracker_params=params,
-                        max_frames=100)
+                        #max_frames=100
+                        max_frames=None
+                        IOUmin=0.33
+                        )
     poses=tracker.tracking(verbose=True)
+    #tracker.updating_histograms()
     #plot_success(gts,poses,os.path.join('../results/CF',data_name+'_success.jpg'))
     #plot_precision(gts,poses,os.path.join('../results/CF',data_name+'_precision.jpg'))
