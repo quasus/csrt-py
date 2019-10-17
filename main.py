@@ -47,7 +47,6 @@ class PyTracker:
     def tracking(self,verbose=True,video_path=None):
         poses = []
         init_frame = cv2.imread(self.frame_list[0])
-        #print(init_frame.shape)
         init_gt = np.array(self.init_gt)
         x1, y1, w, h =init_gt
         init_gt=tuple(init_gt)
@@ -81,7 +80,7 @@ class PyTracker:
                 apce = APCE(score)
                 psr = PSR(score)
                 F_max = np.max(score)
-                size=self.tracker.crop_size
+                size=self.tracker.template_size
                 score = cv2.resize(score, size)
                 score -= score.min()
                 score =score/ score.max()
@@ -186,16 +185,16 @@ if __name__ == '__main__':
     #scale_params['number_of_interp_scales'] = 5 # default: 33
     #scale_params['scale_step_filter']  = 1.14  # 2^(1/5)
 
-    scale_params['number_of_scales_filter'] = 20 # default: 33
-    scale_params['number_of_interp_scales'] = 20 # default: 33
-    scale_params['scale_step_filter']  = 1.03  # 2^(1/20)
+    #scale_params['number_of_scales_filter'] = 20 # default: 33
+    #scale_params['number_of_interp_scales'] = 20 # default: 33
+    #scale_params['scale_step_filter']  = 1.03  # 2^(1/20)
 
     params = DEFAULT_PARAMS
     params['scale_params'] = scale_params
 
-    params['admm_iterations'] = 2 # default: 4
-    params['template_size'] = 64 # default: 200
-    params['top_channels'] = 7 # default: None; less is riskier
+    #params['admm_iterations'] = 2 # default: 4
+    #params['template_size'] = 64 # default: 200
+    #params['top_channels'] = 7 # default: None; less is riskier
 
     data_path=sys.argv[1]
     gts = get_ground_truthes(data_path)
