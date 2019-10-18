@@ -185,6 +185,8 @@ if __name__ == '__main__':
     #scale_params['number_of_interp_scales'] = 5 # default: 33
     #scale_params['scale_step_filter']  = 1.14  # 2^(1/5)
 
+    params = DEFAULT_PARAMS
+
     #params['admm_iterations'] = 2 # default: 4
     #params['template_size'] = 64 # default: 200
     #params['top_channels'] = 7 # default: None; less is riskier
@@ -199,7 +201,6 @@ if __name__ == '__main__':
     # Don't uncomment!  No use.
     #scale_params['random_scale_factors'] = True # default: false
 
-    params = DEFAULT_PARAMS
     params['scale_params'] = scale_params
 
 
