@@ -51,7 +51,8 @@ DEFAULT_SCALE_PARAMS = {
     'scale_feature': 'HOG4',  # features for the scale filter (only HOG4 supported)
     's_num_compressed_dim': 'MAX',  # number of compressed feature dimensions in the scale filter
     'lamBda': 1e-2,  # scale filter regularization
-    'do_poly_interp': False
+    'do_poly_interp': False,
+    'random_scale_factors': False
 }
 
 

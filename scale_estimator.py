@@ -82,10 +82,20 @@ class DSSTScaleEstimator:
         self.sf_den = new_sf_den
 
 
+    def random_scale_factors(self):
+        return np.exp(np.random.normal(0, np.e/18, self.num_scales))
+
+
+    def scale_factors(self):
+        return self.random_scale_factors() if self.config['random_scale_factors'] else self.scale_size_factors
+
+
     def update(self, im, pos, base_target_sz, current_scale_factor):
         base_target_sz=np.array([base_target_sz[0],base_target_sz[1]])
         # get scale filter features
-        scales = current_scale_factor * self.scale_size_factors
+        #scales = current_scale_factor * self.scale_size_factors
+        scales = current_scale_factor * self.scale_factors()
+        #print(current_scale_factor)
         xs = self._extract_scale_sample(im, pos, base_target_sz, scales, self.scale_model_sz)
 
         # project
@@ -116,7 +126,8 @@ class DSSTScaleEstimator:
 
         current_scale_factor=current_scale_factor*scale_change_factor
 
-        scales = current_scale_factor * self.scale_size_factors
+        #scales = current_scale_factor * self.scale_size_factors
+        scales = current_scale_factor * self.scale_factors()
         xs = self._extract_scale_sample(im, pos, base_target_sz, scales, self.scale_model_sz)
         self.s_num = (1 - self.config['scale_learning_rate']) * self.s_num + self.config['scale_learning_rate'] * xs
         # compute projection basis
@@ -229,4 +240,5 @@ class LPScaleEstimator:
         rotate=pty*np.pi/(np.floor(obser.shape[1]/2))
         scale = np.exp(ptx/mag)
         return scale,rotate,mscore
+
 
