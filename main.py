@@ -180,12 +180,11 @@ if __name__ == '__main__':
     #print("TS = " + str(csrdcf.TARGET_SIZE))
 
     scale_params = DEFAULT_SCALE_PARAMS
+    params = DEFAULT_PARAMS
 
     #scale_params['number_of_scales_filter'] = 5 # default: 33
     #scale_params['number_of_interp_scales'] = 5 # default: 33
     #scale_params['scale_step_filter']  = 1.14  # 2^(1/5)
-
-    params = DEFAULT_PARAMS
 
     #params['admm_iterations'] = 2 # default: 4
     #params['template_size'] = 64 # default: 200
