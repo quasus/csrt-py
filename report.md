@@ -155,20 +155,32 @@ dropping all but 7 (or even 5) most significant channels calculated from the
 initial boundary box does not lead to a considerable loss of quality while
 boosting the performance.
 
+The default method of estimating the scale uses a pool of scales being a
+uniform logarithmic grid.  Instead, a non-uniform logarithmic grid clustering
+at 0 could be used.  While a random greed did not result in any improvement of
+performance, a Gauss-uniform grid performs not worse than the default one and
+sometimes better (marked *n/u* in the table below).
+
 As for the accurasy, we measure the mean IOU over the first 100 frames and the
 number of frames processed before IOU hits 0.33.
 
 | Scales | Iterations | Size | Features |  FPS | Frames before lost | Mean IOU (100 frames) |
 | ------ | ---------- | ---- | -------- | ---- | -------| ---------|
 |     33 |          4 |  200 |       29 |  8.5 | 261 | 0.70 |
+|     33**n/u** |          4 |  200 |       29 |  | 231 | 0.75 |
 |    **5** |          4 |  200 |       29 | 15.0 | 238 | 0.51 |
+|    **5n/u** |          4 |  200 |       29 | | 238 | 0.51 |
 |    **21** |          4 |  200 |       29 | 13.8 | 235 | 0.67 |
+|    **21n/u** |          4 |  200 |       29 | | 233 | 0.68 |
 |     33 |        **2** |  200 |       29 |  9.0 | 479 | 0.69 |
 |     33 |          4 | **64** |       29 | 13.6 | 237 | 0.68 |
 |     33 |          4 |  200 |      **7** | 11.5 | 223 | 0.73 |
 |    **5** |        **2** | **64** |      **7** | 37.3 | 234 | 0.49 |
+|    **5n/u** |        **2** | **64** |      **7** | | 233 | 0.50 |
 |   **21** |        **2** | **64** |      **7** | 28.6 | 457 | 0.55 |
+|   **21n/u** |        **2** | **64** |      **7** | | 457 | 0.54 |
 |   33 |        **2** | **64** |      **7** | 14.6 | 341 | 0.55 |
+|   33**n/u** |        **2** | **64** |      **7** | | 236 | 0.61 |
 
 Applying all the optimizations simultaneously does not seem to ruin the
 quality, while the speed increases four times.
