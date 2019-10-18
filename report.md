@@ -161,6 +161,9 @@ at 0 could be used.  While a random greed did not result in any improvement of
 performance, a Gauss-uniform grid performs not worse than the default one and
 sometimes better (marked *n/u* in the table below).
 
+The scale estimate may be improved by means of interpolation (not included in
+the table below).
+
 As for the accurasy, we measure the mean IOU over the first 100 frames and the
 number of frames processed before IOU hits 0.33.
 
