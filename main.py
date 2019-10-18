@@ -189,9 +189,9 @@ if __name__ == '__main__':
     #params['template_size'] = 64 # default: 200
     #params['top_channels'] = 7 # default: None; less is riskier
 
-    #scale_params['number_of_scales_filter'] = 20 # default: 33
-    #scale_params['number_of_interp_scales'] = 20 # default: 33
-    #scale_params['scale_step_filter']  = 1.03  # 2^(1/20)
+    #scale_params['number_of_scales_filter'] = 21 # default: 33
+    #scale_params['number_of_interp_scales'] = 21 # default: 33
+    #scale_params['scale_step_filter']  = 1.034  # 2^(1/21)
 
     #scale_params['nonuniform_scale_factors'] = True
     #scale_params['do_poly_interp'] = True
