@@ -193,6 +193,9 @@ if __name__ == '__main__':
     #scale_params['number_of_interp_scales'] = 20 # default: 33
     #scale_params['scale_step_filter']  = 1.03  # 2^(1/20)
 
+    #scale_params['nonuniform_scale_factors'] = True
+    #scale_params['do_poly_interp'] = True
+
     # Don't uncomment!  No use.
     #scale_params['random_scale_factors'] = True # default: false
 

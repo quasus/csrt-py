@@ -52,6 +52,8 @@ class DSSTScaleEstimator:
         else:
             self.s_num_compressed_dim = self.config['s_num_compressed_dim']
 
+        self.nonuniform_scale_factors = np.exp(np.array([scipy.stats.norm.ppf(i/(self.num_scales + 1), scale=1/5)
+                             for i in range(1, self.num_scales + 1)]))
 
 
     def init(self,im,pos,base_target_sz,current_scale_factor):
@@ -83,11 +85,16 @@ class DSSTScaleEstimator:
 
 
     def random_scale_factors(self):
-        return np.exp(np.random.normal(0, np.e/18, self.num_scales))
+        return np.exp(np.random.normal(0, 1/3, self.num_scales))
 
 
     def scale_factors(self):
-        return self.random_scale_factors() if self.config['random_scale_factors'] else self.scale_size_factors
+        if self.config['random_scale_factors']:
+            return self.random_scale_factors()
+        elif self.config['nonuniform_scale_factors']:
+            return self.nonuniform_scale_factors
+        else:
+            return self.scale_size_factors
 
 
     def update(self, im, pos, base_target_sz, current_scale_factor):

@@ -52,7 +52,8 @@ DEFAULT_SCALE_PARAMS = {
     's_num_compressed_dim': 'MAX',  # number of compressed feature dimensions in the scale filter
     'lamBda': 1e-2,  # scale filter regularization
     'do_poly_interp': False,
-    'random_scale_factors': False
+    'random_scale_factors': False,
+    'nonuniform_scale_factors': False
 }
 
 
