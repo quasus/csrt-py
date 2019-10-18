@@ -90,11 +90,12 @@ class DSSTScaleEstimator:
 
     def scale_factors(self):
         if self.config['random_scale_factors']:
-            return self.random_scale_factors()
+            factors = self.random_scale_factors()
         elif self.config['nonuniform_scale_factors']:
-            return self.nonuniform_scale_factors
+            factors = self.nonuniform_scale_factors
         else:
-            return self.scale_size_factors
+            factors = self.scale_size_factors
+        return factors
 
 
     def update(self, im, pos, base_target_sz, current_scale_factor):
